@@ -86,7 +86,7 @@
     <div class="item-active-actions hidden md:flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
         ${button(`$data.toggleUncertainFetch(${itemId})`, uncertain ? 'actions.remove_mark' : 'actions.mark_uncertain', 'uncertain')}
         ${button(edit, 'common.edit', 'edit', attributes)}
-        <div x-data="{open:false}" class="relative">${button('open=!open', 'actions.move', 'move')}<div x-show="open" @click.outside="open=false" x-cloak class="absolute right-0 mt-1 w-40 bg-white dark:bg-stone-800 rounded-lg shadow-xl border border-stone-200 dark:border-stone-700 z-50 py-1">${moves}</div></div>
+        <div x-data="{open:false}" class="item-move relative">${button('open=!open', 'actions.move', 'move')}<div x-show="open" @click.outside="open=false" x-cloak class="absolute right-0 mt-1 w-40 bg-white dark:bg-stone-800 rounded-lg shadow-xl border border-stone-200 dark:border-stone-700 z-50 py-1">${moves}</div></div>
         ${button(remove, 'common.delete', 'close', `data-item-name="${escape(value.name)}"`)}
     </div>
     <button type="button" ${attributes} @click="$dispatch('open-mobile-action',{id:Number($el.dataset.itemId),name:$el.dataset.itemName,description:$el.dataset.itemDescription,quantity:Number($el.dataset.itemQuantity),section_id:Number($el.dataset.sectionId),uncertain:$el.dataset.uncertain==='true'})" :aria-label="t('items.more_options')" class="item-active-actions md:hidden p-2 rounded-lg text-stone-400 dark:text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-700">${svg('dots', 'w-5 h-5')}</button>

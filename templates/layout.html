@@ -157,6 +157,8 @@
         /* The same row is used for optimistic updates and server rendering. */
         [data-sort-mode="alphabetical"] .drag-handle,
         [data-sort-mode="alphabetical_desc"] .drag-handle { display: none; }
+        /* "Move" only targets other sections, so hide it when the list has just one. */
+        body:not(:has(#sections-list > [data-section-id] ~ [data-section-id])) .item-move { display: none; }
         .shopping-item[data-completed="true"] {
             padding-top: 0.625rem;
             padding-bottom: 0.625rem;

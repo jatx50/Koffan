@@ -549,7 +549,7 @@
                     <span x-text="mobileActionItem?.uncertain ? t('actions.certain') : t('actions.uncertain')"></span>
                 </button>
 
-                <div x-data="{ showSections: false }">
+                <div x-data="{ showSections: false }" class="item-move">
                     <button @click="showSections = !showSections"
                         class="w-full flex items-center gap-3 p-3 rounded-xl bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-200">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
