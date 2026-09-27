@@ -91,3 +91,9 @@ html.dark {
 .tab {
   font-variant-numeric: lining-nums tabular-nums;
 }
+
+/* Small caps: real small caps from the font (c2sc + smcp), 8% letterspacing. */
+.caps {
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.08em;
+}
