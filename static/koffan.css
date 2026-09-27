@@ -50,6 +50,24 @@
   src: url('fonts/equity_ot_b_bold.woff2') format('woff2');
 }
 
+/* Fonts: Concourse OT (MB Type). 4 medium as regular, 6 semibold as bold. */
+
+@font-face {
+  font-family: concourse_ot;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/concourse_ot_4_medium.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: concourse_ot;
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('fonts/concourse_ot_6_semibold.woff2') format('woff2');
+}
+
 /* Palette: light */
 :root {
   --bg: #FBFAF6;
@@ -98,14 +116,31 @@ html.dark {
   letter-spacing: 0.08em;
 }
 
-/* Headings: two levels, small size step, regular weight; space is the emphasis (headings.html). */
+/* Headings, as on practicaltypography.com/resumes.html:
+   title Equity bold 125%; subtitle Equity italic; section head Equity bold small caps.
+   Space in rem (1rem = body size), measured on that page at 390px. */
 h1 {
-  font-size: 20.5px;
+  font-size: 23.75px;
+  line-height: 1.1;
+  margin: 0 0 0.88rem;
+}
+
+.subtitle {
+  font-style: italic;
   line-height: 1.25;
-  font-weight: normal;
+  margin-bottom: 2rem;
 }
 
 h2 {
   font-size: 19px;
-  font-weight: normal;
+  line-height: 1.3;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.08em;
+  margin: 1.54rem 0 0.44rem;
+}
+
+/* Space: paragraphs 100% of the body size (space-between-paragraphs.html; as on the resumes page). */
+p,
+ul {
+  margin: 0 0 1em;
 }
