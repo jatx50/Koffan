@@ -77,6 +77,8 @@ html {
   background: var(--bg);
   color: var(--text);
   font-family: equity_ot_a, Georgia, serif;
+  font-size: 19px;
+  line-height: 1.3;
   font-kerning: normal;
 }
 
