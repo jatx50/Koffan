@@ -97,3 +97,15 @@ html.dark {
   font-variant-caps: all-small-caps;
   letter-spacing: 0.08em;
 }
+
+/* Headings: two levels, small size step, regular weight; space is the emphasis (headings.html). */
+h1 {
+  font-size: 20.5px;
+  line-height: 1.25;
+  font-weight: normal;
+}
+
+h2 {
+  font-size: 19px;
+  font-weight: normal;
+}
