@@ -26,3 +26,8 @@ Thumbs.db
 CLAUDE.md
 shopping-list-go
 docs/superpowers/
+
+# Redesign (licensed fonts, local mockups)
+_scratch/
+static/fonts/
+mockups/
