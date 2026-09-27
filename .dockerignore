@@ -21,3 +21,6 @@ Dockerfile
 
 # Docs
 README.md
+
+# Node
+node_modules/

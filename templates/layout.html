@@ -57,18 +57,27 @@
 
     <!-- i18n translations -->
     <script>
-        window.translations = {{.Translations | toJSON}};
+        // The server embeds only its page language and English (the fallback).
+        window.translations = {{.Translations}};
+        window.pageLang = {{.PageLang | toJSON}};
         window.locales = {{.Locales | toJSON}};
         window.defaultLang = {{.DefaultLang | toJSON}};
 
-        // Language: localStorage > server default
+        // Language: localStorage > page language (lang cookie or server default)
         (function() {
             const stored = localStorage.getItem('language');
-            if (stored && window.translations[stored]) {
-                window.currentLang = stored;
-            } else {
-                window.currentLang = window.defaultLang;
+            if (stored && !window.translations[stored] && window.locales.some(locale => locale.code === stored)) {
+                // The page language comes from the lang cookie. Restore a missing
+                // or expired cookie from the saved choice and reload once.
+                document.cookie = 'lang=' + stored + ';path=/;max-age=31536000;SameSite=Lax';
+                try {
+                    if (sessionStorage.getItem('languageSync') !== stored) {
+                        sessionStorage.setItem('languageSync', stored);
+                        location.reload();
+                    }
+                } catch (e) {}
             }
+            window.currentLang = stored && window.translations[stored] ? stored : window.pageLang;
             // Set page title based on language
             document.title = window.translations[window.currentLang]?.list?.title || 'Koffan Shopping List';
             // Also set html lang attribute
@@ -125,33 +134,6 @@
             }
         });
     </script>
-
-    <!-- Tailwind CSS -->
-    <script src="{{asset "tailwind.min.js"}}"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#f9a8d4',
-                        uncertain: '#fef3c7',
-                    }
-                }
-            }
-        }
-    </script>
-
-    <!-- HTMX -->
-    <script src="{{asset "htmx.min.js"}}"></script>
-    <script src="{{asset "htmx-ws.js"}}"></script>
-
-    <!-- Alpine.js + Collapse plugin (collapse must load before Alpine) -->
-    <script src="{{asset "alpine-collapse.min.js"}}"></script>
-    <script defer src="{{asset "alpine.min.js"}}"></script>
-
-    <!-- SortableJS for mobile drag-and-drop -->
-    <script src="{{asset "sortable.min.js"}}"></script>
 
     <style>
         /* The same row is used for optimistic updates and server rendering. */
@@ -487,6 +469,10 @@
             pointer-events: none;
         }
     </style>
+
+    <!-- Tailwind CSS, prebuilt by `npm run build:css`. It follows the inline
+         styles above so utilities keep winning ties in the cascade. -->
+    <link rel="stylesheet" href="{{asset "app.css"}}">
 </head>
 <body class="bg-gray-100 dark:bg-stone-900 min-h-screen transition-colors duration-200">
     <!-- Refresh overlay -->
@@ -501,6 +487,12 @@
 
     {{embed}}
 
+    <!-- Libraries load after the content so they do not delay the first paint.
+         Alpine is deferred and starts last, after the collapse plugin and app code. -->
+    <script src="{{asset "htmx.min.js"}}"></script>
+    <script src="{{asset "sortable.min.js"}}"></script>
+    <script src="{{asset "alpine-collapse.min.js"}}"></script>
+    <script defer src="{{asset "alpine.min.js"}}"></script>
     <script src="{{asset "viewport.js"}}"></script>
     <script src="{{asset "offline-storage.js"}}"></script>
     <script src="{{asset "realtime.js"}}"></script>

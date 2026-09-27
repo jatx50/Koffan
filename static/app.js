@@ -2917,8 +2917,8 @@ function shoppingList() {
                 chosenClass: 'sortable-chosen',
                 dragClass: 'sortable-drag',
                 group: 'items',
-                delay: 150,
-                delayOnTouchOnly: true,
+                // Dragging starts only from the handle, which cannot scroll the
+                // page (touch-action: none), so no press-and-hold delay is needed.
                 touchStartThreshold: 5,
                 scroll: true,
                 scrollSensitivity: 150,
@@ -3166,7 +3166,6 @@ function shoppingList() {
 // HTMX configuration
 document.addEventListener('DOMContentLoaded', function() {
     htmx.config.defaultSwapStyle = 'outerHTML';
-    htmx.config.globalViewTransitions = true;
 
     // Track existing items before swap to animate only new ones
     let existingItemIds = new Set();

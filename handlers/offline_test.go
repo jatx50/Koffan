@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"shopping-list/db"
 	"strconv"
 	"strings"
@@ -55,12 +56,20 @@ func TestOfflineSyncHTTPReplayAndConflicts(t *testing.T) {
 	body := `{"client_id":"` + clientID + `","operations":[{"id":"` + operationID + `","entity":"list","action":"create","entity_id":-1,"values":{"name":"Weekend"}}]}`
 	first := postOfflineJSON(t, app, body, http.StatusOK)
 	second := postOfflineJSON(t, app, body, http.StatusOK)
-	if !bytes.Equal(first, second) {
-		t.Fatalf("lost-ACK retry response changed:\n%s\n%s", first, second)
-	}
-	var result db.OfflineSyncResponse
+	var result, retried db.OfflineSyncResponse
 	if err := json.Unmarshal(first, &result); err != nil {
 		t.Fatal(err)
+	}
+	if err := json.Unmarshal(second, &retried); err != nil {
+		t.Fatal(err)
+	}
+	if result.Snapshot.GeneratedAt <= 0 || retried.Snapshot.GeneratedAt <= 0 {
+		t.Fatalf("snapshots must carry their generation time:\n%s\n%s", first, second)
+	}
+	// Only the generation time may differ between a request and its retry.
+	result.Snapshot.GeneratedAt, retried.Snapshot.GeneratedAt = 0, 0
+	if !reflect.DeepEqual(result, retried) {
+		t.Fatalf("lost-ACK retry response changed:\n%s\n%s", first, second)
 	}
 	if len(result.Results) != 1 || result.Results[0].EntityID != -1 || result.Results[0].ServerID <= 0 || len(result.Snapshot.Lists) != 1 {
 		t.Fatalf("wrong protocol response: %s", first)

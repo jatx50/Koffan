@@ -15,10 +15,18 @@ import (
 	"github.com/google/uuid"
 )
 
+// loadOfflineSnapshot reads the snapshot sent to clients, stamped with the
+// time it was generated.
+func loadOfflineSnapshot() (db.OfflineSnapshot, error) {
+	snapshot, err := db.GetOfflineSnapshot()
+	snapshot.GeneratedAt = time.Now().UnixMilli()
+	return snapshot, err
+}
+
 // GetOfflineSnapshot returns all lists so an offline device can navigate its
 // cached lists independently of another device's current list.
 func GetOfflineSnapshot(c *fiber.Ctx) error {
-	snapshot, err := db.GetOfflineSnapshot()
+	snapshot, err := loadOfflineSnapshot()
 	if err != nil {
 		log.Printf("Offline snapshot failed: %v", err)
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to load offline snapshot"})
@@ -55,6 +63,7 @@ func SyncOffline(c *fiber.Ctx) error {
 	if response.Changed {
 		BroadcastUpdate("offline_sync", nil)
 	}
+	response.Snapshot.GeneratedAt = time.Now().UnixMilli()
 	c.Set("Cache-Control", "no-store")
 	return c.JSON(response)
 }

@@ -26,9 +26,8 @@ const STATIC_ASSETS = [
     '/static/favicon.ico',
     '/static/favicon-96.png',
     '/static/apple-touch-icon.png',
-    '/static/tailwind.min.js?v=__ASSET_HASH__',
+    '/static/app.css?v=__ASSET_HASH__',
     '/static/htmx.min.js?v=__ASSET_HASH__',
-    '/static/htmx-ws.js?v=__ASSET_HASH__',
     '/static/alpine-collapse.min.js?v=__ASSET_HASH__',
     '/static/alpine.min.js?v=__ASSET_HASH__',
     '/static/sortable.min.js?v=__ASSET_HASH__'
@@ -106,7 +105,7 @@ self.addEventListener('fetch', (event) => {
     // and HTMX fragments look like successful server replies and can undo local
     // changes or hide a disconnected mobile connection from the application.
     if (event.request.mode === 'navigate') {
-        event.respondWith(networkFirst(event.request));
+        event.respondWith(networkFirst(event.request, promise => event.waitUntil(promise)));
     }
 
 });
@@ -158,22 +157,24 @@ async function fetchNavigation(request) {
     }
 }
 
-async function cacheDocument(request, response) {
-    if (!response.ok || response.redirected) return;
-    try {
-        const cache = await caches.open(DYNAMIC_CACHE);
-        await cache.put(request, response.clone());
-    } catch (error) {
-        // Cache quota or storage failures must not turn a successful load offline.
-        console.warn('[SW] Document could not be cached:', error);
-    }
+// Takes its copy synchronously, before the browser starts reading the response.
+function cacheDocument(request, response) {
+    if (!response.ok || response.redirected) return Promise.resolve();
+    const copy = response.clone();
+    return caches.open(DYNAMIC_CACHE)
+        .then(cache => cache.put(request, copy))
+        .catch(error => {
+            // Cache quota or storage failures must not turn a successful load offline.
+            console.warn('[SW] Document could not be cached:', error);
+        });
 }
 
-// Network First strategy for complete documents only.
-async function networkFirst(request) {
+// Network First strategy for complete documents only. The offline copy is
+// saved in the background so the page does not wait for Cache Storage.
+async function networkFirst(request, waitUntil) {
     try {
         const response = await fetchNavigation(request);
-        await cacheDocument(request, response);
+        waitUntil(cacheDocument(request, response));
         return response;
     } catch (error) {
         const cache = await caches.open(DYNAMIC_CACHE);

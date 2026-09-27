@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"shopping-list/db"
-	"shopping-list/i18n"
 	"shopping-list/webhook"
 	"strconv"
 	"strings"
@@ -30,19 +29,16 @@ func GetListsPage(c *fiber.Ctx) error {
 	}
 
 	templates, _ := db.GetAllTemplates()
-	snapshot, err := db.GetOfflineSnapshot()
+	snapshot, err := loadOfflineSnapshot()
 	if err != nil {
 		return sendError(c, 500, "error.fetch_failed")
 	}
 
-	return c.Render("home", fiber.Map{
+	return c.Render("home", withPageI18n(c, fiber.Map{
 		"Lists":           lists,
 		"Templates":       templates,
 		"OfflineSnapshot": snapshot,
-		"Translations":    i18n.GetAllLocales(),
-		"Locales":         i18n.AvailableLocales(),
-		"DefaultLang":     i18n.GetDefaultLang(),
-	})
+	}))
 }
 
 // GetListView returns a single list with its items
@@ -66,29 +62,21 @@ func GetListView(c *fiber.Ctx) error {
 	// Set this list as active
 	db.SetActiveList(id)
 
-	sections, err := db.GetSectionsByList(id)
+	snapshot, err := loadOfflineSnapshot()
 	if err != nil {
 		return sendError(c, 500, "error.fetch_failed")
 	}
 
-	stats := db.GetListStats(id)
-	lists, _ := db.GetAllLists()
-	snapshot, err := db.GetOfflineSnapshot()
-	if err != nil {
-		return sendError(c, 500, "error.fetch_failed")
-	}
-
-	return c.Render("list", fiber.Map{
+	// Sections and items are rendered in the browser from OfflineSnapshot
+	// (static/offline-app.js), so the server sends only the page shell.
+	return c.Render("list", withPageI18n(c, fiber.Map{
 		"List":            list,
 		"OfflineSnapshot": snapshot,
-		"Lists":           lists,
-		"Sections":        sections,
-		"Stats":           stats,
+		"Lists":           snapshot.Lists,
+		"Sections":        []db.Section{},
+		"Stats":           list.Stats,
 		"ShowCompleted":   list.ShowCompleted,
-		"Translations":    i18n.GetAllLocales(),
-		"Locales":         i18n.AvailableLocales(),
-		"DefaultLang":     i18n.GetDefaultLang(),
-	})
+	}))
 }
 
 // GetLists returns all lists (JSON API)

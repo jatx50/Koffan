@@ -494,3 +494,19 @@ test('a batch persistence failure does not publish intermediate changes', async 
     assert.deepEqual(client.getState(), before);
     assert.equal(client.pendingCount, 0);
 });
+
+test('a newer page snapshot replaces an older stored copy and keeps pending changes', async () => {
+    const { client } = await model({ snapshot: { ...base(), generated_at: 1000 } });
+    await client.mutate({ entity: 'item', action: 'update', entity_id: 3, values: { completed: true } });
+    const newer = base();
+    newer.items.push({ id: 4, section_id: 2, name: 'Bread', description: '', completed: false, quantity: 0, sort_order: 1 });
+    newer.generated_at = 2000;
+    assert.equal(await client.seed(newer), true);
+    const state = client.getState();
+    assert.deepEqual(state.items.map(item => [item.id, item.completed]), [[3, true], [4, false]], 'pending edits are replayed on top');
+    assert.equal(client.pendingCount, 1);
+    assert.equal('generated_at' in state, false, 'the generation time is not part of the visible model');
+    assert.equal(await client.seed({ ...blank(), generated_at: 1500 }), false, 'an older copy, such as a cached offline page, is ignored');
+    assert.equal(await client.seed(blank()), false, 'a snapshot without a generation time never replaces stored data');
+    assert.equal(client.getState().items.length, 2);
+});

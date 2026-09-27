@@ -6,7 +6,7 @@
     data-completed="{{.Item.Completed}}"
     data-sort-order="{{.Item.SortOrder}}"
     data-sort-name="{{.Item.Name}}"
-    class="shopping-item px-4 py-3 flex items-center gap-0.5 hover:bg-stone-50 dark:hover:bg-stone-700 transition-colors group select-none {{if .Item.Uncertain}}bg-amber-50/50 dark:bg-amber-900/30{{end}}"
+    class="shopping-item px-4 py-3 flex items-center gap-0.5 hover:bg-stone-50 dark:hover:bg-stone-700 active:bg-stone-100 dark:active:bg-stone-700 transition-colors group select-none {{if .Item.Uncertain}}bg-amber-50/50 dark:bg-amber-900/30{{end}}"
     x-show="isItemVisible({{.Item.ID}})"
 >
     <!-- Drag Handle -->
@@ -25,7 +25,7 @@
     <button
         role="checkbox" aria-label="{{.Item.Name}}" aria-checked="{{.Item.Completed}}"
         @click="$data.toggleItem({{.Item.ID}}, {{.Item.SectionID}})"
-        class="flex-shrink-0 w-11 h-11 flex items-center justify-center -m-3"
+        class="flex-shrink-0 w-11 h-11 flex items-center justify-center -m-3 active:scale-90 transition-transform"
     >
         <span class="w-5 h-5 rounded-full {{if .Item.Completed}}bg-pink-400 flex items-center justify-center{{else}}border-2 border-stone-300 dark:border-stone-500 hover:border-pink-400 transition-transform hover:scale-110{{end}}">{{if .Item.Completed}}<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>{{end}}</span>
     </button>

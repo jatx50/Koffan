@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"shopping-list/db"
-	"shopping-list/i18n"
 	"shopping-list/webhook"
 	"strconv"
 	"strings"
@@ -42,15 +41,12 @@ func GetSections(c *fiber.Ctx) error {
 	lists, _ := db.GetAllLists()
 	activeList, _ := db.GetActiveList()
 
-	return c.Render("list", fiber.Map{
-		"Sections":     sections,
-		"Stats":        stats,
-		"Lists":        lists,
-		"ActiveList":   activeList,
-		"Translations": i18n.GetAllLocales(),
-		"Locales":      i18n.AvailableLocales(),
-		"DefaultLang":  i18n.GetDefaultLang(),
-	})
+	return c.Render("list", withPageI18n(c, fiber.Map{
+		"Sections":   sections,
+		"Stats":      stats,
+		"Lists":      lists,
+		"ActiveList": activeList,
+	}))
 }
 
 // CreateSection creates a new section

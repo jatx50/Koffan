@@ -44,6 +44,7 @@
                 return record;
             });
         }
+        if (Number.isFinite(snapshot.generated_at)) result.generated_at = snapshot.generated_at;
         return result;
     }
 
@@ -134,6 +135,7 @@
     function rebase(record, snapshot = record.snapshot) {
         const previous = record.state;
         const state = normalizeSnapshot(snapshot);
+        delete state.generated_at;
         // Keep a pending edit visible when a remote deletion creates a conflict.
         // The server will reject it with 409; the durable operation remains intact.
         function restore(entity, id) {
@@ -189,6 +191,8 @@
 
         get pendingCount() { return this._record?.operations.length || 0; }
         get clientId() { return this._record?.client_id || null; }
+        // Server generation time of the snapshot the model is based on (0 if unknown).
+        get snapshotTime() { return this._record?.snapshot?.generated_at || 0; }
         getState() { return clone(this._record?.state || emptyState()); }
         getPendingOperations() { return clone(this._record?.operations || []); }
         resolveID(entity, id) {
@@ -257,7 +261,12 @@
             try {
                 const normalized = normalizeSnapshot(snapshot);
                 return await this._transact(record => {
-                    if (record.initialized || record.operations.length) return { save: false, value: false };
+                    // A page embeds the snapshot current when it was rendered. Use it
+                    // when nothing is stored yet or when it is newer than the stored
+                    // copy; pending operations are replayed on top, as after a refresh.
+                    const empty = !record.initialized && !record.operations.length;
+                    const newer = normalized.generated_at > (record.snapshot.generated_at || 0);
+                    if (!empty && !newer) return { save: false, value: false };
                     rebase(record, normalized);
                     record.initialized = true;
                     return { value: true };
@@ -423,6 +432,8 @@
             this._channel?.close();
         }
     }
+
+    OfflineCRUD.normalizeSnapshot = normalizeSnapshot;
 
     if (typeof module !== 'undefined' && module.exports) module.exports = OfflineCRUD;
     root.OfflineCRUD = OfflineCRUD;

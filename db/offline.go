@@ -43,6 +43,10 @@ type OfflineSnapshot struct {
 	Lists    []List    `json:"lists"`
 	Sections []Section `json:"sections"`
 	Items    []Item    `json:"items"`
+	// GeneratedAt (Unix milliseconds) lets clients tell a fresh snapshot from
+	// an older copy, such as a page restored from the offline cache. Handlers
+	// stamp it when they send a snapshot; it is not part of the data.
+	GeneratedAt int64 `json:"generated_at,omitempty"`
 }
 
 type OfflineSyncResponse struct {

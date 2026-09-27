@@ -1,5 +1,5 @@
 {{define "list"}}
-<div x-data="shoppingList()" x-init="init()" x-show="_crudReady" x-cloak @refresh-list.window="refreshList()" class="min-h-screen pb-28 md:pb-8 bg-stone-50 dark:bg-stone-900 transition-colors" data-list-id="{{.List.ID}}" data-show-completed="{{.ShowCompleted}}">
+<div x-data="shoppingList()" x-init="init()" x-show="_crudReady || _crudShown" x-cloak @refresh-list.window="refreshList()" class="min-h-screen pb-28 md:pb-8 bg-stone-50 dark:bg-stone-900 transition-colors" data-list-id="{{.List.ID}}" data-show-completed="{{.ShowCompleted}}">
     <div x-show="crudError" x-cloak role="alert" class="mx-auto max-w-4xl p-3 text-sm bg-amber-50 dark:bg-amber-950 text-amber-900 dark:text-amber-100">
         <span x-text="crudError"></span>
         <button @click="crudRetry()" class="underline ml-2" x-text="t('offline.retry')"></button>

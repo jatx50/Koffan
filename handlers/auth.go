@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"shopping-list/db"
-	"shopping-list/i18n"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -68,12 +67,9 @@ func LoginPage(c *fiber.Ctx) error {
 			return c.Redirect("/")
 		}
 	}
-	return c.Render("login", fiber.Map{
-		"Error":        c.Query("error"),
-		"Translations": i18n.GetAllLocales(),
-		"Locales":      i18n.AvailableLocales(),
-		"DefaultLang":  i18n.GetDefaultLang(),
-	}, "")
+	return c.Render("login", withPageI18n(c, fiber.Map{
+		"Error": c.Query("error"),
+	}), "")
 }
 
 // Login handles login form submission

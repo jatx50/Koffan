@@ -11,6 +11,7 @@ function loadWorker(fetchImpl = async () => new Response('fresh'), options = {})
         async match(request) { return entries.get(key(request))?.clone(); },
         async put(request, response) {
             if (options.quotaError) throw new Error('Quota exceeded');
+            if (options.cachePut) await options.cachePut;
             entries.set(key(request), response);
         }
     };
@@ -22,13 +23,14 @@ function loadWorker(fetchImpl = async () => new Response('fresh'), options = {})
         clearTimeout: options.clearTimeout || clearTimeout
     });
     vm.runInContext(fs.readFileSync(require.resolve('../static/sw.js'), 'utf8'), context);
+    const background = [];
     function dispatch(path, mode = 'cors') {
         let response;
         const request = { url: new URL(path, 'http://localhost:3000').href, method: 'GET', mode, headers: new Headers({ accept: 'text/html' }) };
-        listeners.fetch({ request, respondWith(value) { response = value; } });
+        listeners.fetch({ request, respondWith(value) { response = value; }, waitUntil(promise) { background.push(promise); } });
         return response;
     }
-    return { dispatch, entries };
+    return { dispatch, entries, settled: () => Promise.all(background) };
 }
 
 for (const path of ['/api/data', '/api/item/1/version', '/sections/1/items', '/stats', '/lists/1']) {
@@ -89,6 +91,17 @@ test('unreachable mobile connection times out and loads saved navigation', async
 test('storage quota failure does not replace a successful server document', async () => {
     const { dispatch } = loadWorker(async () => new Response('fresh list'), { quotaError: true });
     assert.equal(await (await dispatch('/lists/1', 'navigate')).text(), 'fresh list');
+});
+
+test('a fresh document is returned before its offline copy is written', async () => {
+    let finishWrite;
+    const cachePut = new Promise(resolve => { finishWrite = resolve; });
+    const { dispatch, entries, settled } = loadWorker(async () => new Response('fresh list'), { cachePut });
+    assert.equal(await (await dispatch('/lists/1', 'navigate')).text(), 'fresh list');
+    assert.equal(entries.has('http://localhost:3000/lists/1'), false, 'the page does not wait for Cache Storage');
+    finishWrite();
+    await settled();
+    assert.equal(await entries.get('http://localhost:3000/lists/1').text(), 'fresh list');
 });
 
 test('login redirect cannot overwrite the saved list document', async () => {

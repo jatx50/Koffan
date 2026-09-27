@@ -250,3 +250,30 @@ test('an unsupported legacy action remains queued and does not leave the page hi
     assert.equal(app._legacyMigrationBlocked, true);
     assert.equal(app.crudError, 'offline.sync_failed');
 });
+
+function earlyRenderHarness({ model = { pending: 0, snapshot_at: 1000 }, generatedAt = 2000 } = {}) {
+    const h = harness();
+    const drawn = [];
+    const stored = new Map(model === null ? [] : [['koffan-offline-model', JSON.stringify(model)]]);
+    h.context.localStorage = { getItem: key => stored.get(key) ?? null, setItem: (key, value) => stored.set(key, value) };
+    h.context.window.OfflineCRUD = OfflineCRUD;
+    h.context.window.offlineStorage = { init: () => new Promise(() => {}) };
+    h.context.window.offlineBootstrap = { lists: [{ id: 1, name: 'Groceries' }], sections: [], items: [], generated_at: generatedAt };
+    h.app.renderCRUD = state => drawn.push(state);
+    h.app.initCRUD();
+    return drawn;
+}
+
+test('a page snapshot at least as new as the stored model is drawn before the offline store opens', () => {
+    const drawn = earlyRenderHarness();
+    assert.equal(drawn.length, 1);
+    assert.deepEqual(drawn[0].lists.map(list => list.name), ['Groceries']);
+    assert.equal(earlyRenderHarness({ generatedAt: 1000 }).length, 1, 'the same snapshot as the stored model');
+});
+
+test('the page snapshot waits for the offline store when it may be outdated', () => {
+    assert.equal(earlyRenderHarness({ model: null }).length, 0, 'unknown local state');
+    assert.equal(earlyRenderHarness({ model: { pending: 2, snapshot_at: 1000 } }).length, 0, 'unsynced local changes');
+    assert.equal(earlyRenderHarness({ generatedAt: 500 }).length, 0, 'an older copy, such as a cached offline page');
+    assert.equal(earlyRenderHarness({ generatedAt: null }).length, 0, 'a page cached before snapshots carried their time');
+});

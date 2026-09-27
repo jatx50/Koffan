@@ -1,0 +1,12 @@
+{
+  "name": "koffan",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -c tailwind.config.js -i tailwind/input.css -o static/app.css --minify",
+    "watch:css": "tailwindcss -c tailwind.config.js -i tailwind/input.css -o static/app.css --watch",
+    "test": "node --test test/*.test.js"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.1"
+  }
+}

@@ -26,3 +26,6 @@ Thumbs.db
 CLAUDE.md
 shopping-list-go
 docs/superpowers/
+
+# Node (Tailwind CSS build)
+node_modules/

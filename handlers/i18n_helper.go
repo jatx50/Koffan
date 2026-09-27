@@ -14,6 +14,16 @@ func getLang(c *fiber.Ctx) string {
 	return i18n.GetDefaultLang()
 }
 
+// withPageI18n adds the translation data every full page embeds.
+func withPageI18n(c *fiber.Ctx, data fiber.Map) fiber.Map {
+	lang := i18n.ResolveLang(c.Cookies("lang"))
+	data["Translations"] = i18n.PageTranslationsJSON(lang)
+	data["PageLang"] = lang
+	data["Locales"] = i18n.AvailableLocales()
+	data["DefaultLang"] = i18n.GetDefaultLang()
+	return data
+}
+
 // sendError sends a translated error message
 func sendError(c *fiber.Ctx, status int, key string) error {
 	return c.Status(status).SendString(i18n.Get(getLang(c), key))

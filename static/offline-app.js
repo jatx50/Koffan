@@ -3,19 +3,41 @@
     const clone = value => JSON.parse(JSON.stringify(value));
     const byOrder = (a, b) => a.sort_order - b.sort_order || a.id - b.id;
     const entityItems = (state, entity) => state[entity === 'list' ? 'lists' : entity === 'section' ? 'sections' : 'items'];
+    // Pages embed the snapshot current when they were rendered. It is drawn
+    // before IndexedDB opens only when it is at least as new as the stored model
+    // and this device holds no unsynced changes; an older copy (for example a
+    // page restored from the offline cache) waits for the stored model instead.
+    // Both times come from the server clock, so device clock skew does not matter.
+    const MODEL_KEY = 'koffan-offline-model';
+    function rememberModel(crud) {
+        try {
+            localStorage.setItem(MODEL_KEY, JSON.stringify({ pending: crud.pendingCount, snapshot_at: crud.snapshotTime }));
+        } catch (_) { /* Only disables the early render. */ }
+    }
+    function bootstrapState() {
+        const snapshot = window.offlineBootstrap;
+        let model;
+        try { model = JSON.parse(localStorage.getItem(MODEL_KEY)); } catch (_) { return null; }
+        if (!model || model.pending !== 0 || !Number.isFinite(snapshot?.generated_at) || snapshot.generated_at < model.snapshot_at) return null;
+        try { return window.OfflineCRUD.normalizeSnapshot(snapshot); } catch (_) { return null; }
+    }
     const common = {
         crudError: '',
         _crudReady: false,
+        _crudShown: false,
         _crudConflict: null,
         async initCRUD() {
             if (this._crudInit) return this._crudInit;
             this._crudInit = (async () => {
+                const early = bootstrapState();
+                if (early) this.renderCRUD(early);
                 await window.offlineStorage.init();
                 this._crud = new window.OfflineCRUD({
                     storage: window.offlineStorage,
                     request: (url, options) => this.request(url, options),
                     onChange: () => {
                         this._pendingActionCount = this._crud.pendingCount;
+                        rememberModel(this._crud);
                         if (this._crudReady) this.renderCRUD();
                     },
                     onError: error => this.crudReportError(error)
@@ -135,10 +157,12 @@
             form.reset();
         },
         async crudUpdateList(id, name, icon) {
+            await this.initCRUD();
             const list = this.crudFind('list', id);
             await this.crudMutate('list', 'update', Number(id), { name: name.trim(), icon: icon || list.icon });
         },
         async crudDeleteList(id) {
+            await this.initCRUD();
             const list = this.crudFind('list', id);
             if (!list || !confirm(t('lists.delete_confirm', {name: list.name}))) return;
             await this.crudMutate('list', 'delete', Number(id));
@@ -146,6 +170,7 @@
         async crudMoveList(id, direction) { return this.crudMoveEntity('list', id, direction); },
         async crudMoveSection(id, direction) { return this.crudMoveEntity('section', id, direction); },
         async crudMoveEntity(entity, id, direction) {
+            await this.initCRUD();
             const row = this.crudFind(entity, id);
             const rows = entityItems(this.crudState(), entity).filter(other => entity !== 'section' || other.list_id === row.list_id).sort(byOrder);
             const index = rows.findIndex(other => other.id === row.id);
@@ -165,6 +190,7 @@
             await this.crudMutate('section', 'update', Number(id), { name: name.trim() });
         },
         async crudDeleteSection(id) {
+            await this.initCRUD();
             const section = this.crudFind('section', id);
             if (!section || !confirm(t('confirm.delete_section', {name: section.name}))) return;
             await this.crudMutate('section', 'delete', Number(id));
@@ -229,11 +255,13 @@
                 this._crud?.close?.();
                 destroy.call(this);
             },
-            renderCRUD() {
-                if (!this._crudReady) return;
+            // Draws the durable model, or `state` when given (the page snapshot
+            // drawn before the model has loaded).
+            renderCRUD(state) {
+                if (!state && !this._crudReady) return;
                 if (this._pointerDown && !this._crudLocalMutation) { this._needsRefresh = true; return; }
                 this._needsRefresh = false;
-                const state = this.crudState();
+                state ||= this.crudState();
                 const listId = this.currentListId();
                 const list = state.lists.find(row => row.id === listId);
                 if (!list) {
@@ -328,6 +356,7 @@
                 window.checkEmptyStates();
                 this.stats = stats;
                 this._crudHasRendered = true;
+                this._crudShown = true;
                 this.$nextTick(() => {
                     // Alpine skips new nodes moved by sorting in the same mutation batch.
                     // Clean up any observer initialization before installing one handler set.
@@ -337,6 +366,7 @@
                 });
             },
             async toggleItem(id) {
+                await this.initCRUD();
                 const item = this.crudFind('item',id);
                 if (item) await this.crudMutate('item','update',item.id,{completed:!item.completed});
             },
@@ -346,6 +376,7 @@
                 this.editingItem = null;
             },
             async crudAddItem(sectionId,name,description='',quantity=0) {
+                await this.initCRUD();
                 const state = this.crudState();
                 const existing = state.items.find(item => item.section_id === Number(sectionId) && item.name.replace(/[A-Z]/g,c=>c.toLowerCase()) === name.replace(/[A-Z]/g,c=>c.toLowerCase()));
                 if (existing) {
@@ -379,6 +410,7 @@
             },
             async deleteCompletedItems() {
                 if (!confirm(t('confirm.delete_completed_items'))) return;
+                await this.initCRUD();
                 const state = this.crudState();
                 const ids = new Set(state.sections.filter(section => section.list_id === this.currentListId()).map(section => section.id));
                 await this.crudBatch(state.items.filter(item => ids.has(item.section_id) && item.completed).map(item => ({entity:'item',action:'delete',entity_id:item.id,values:{}})));
@@ -386,12 +418,14 @@
             },
             async adjustQuantity(delta) {
                 if (!this.mobileActionItem) return;
+                await this.initCRUD();
                 const item = this.crudFind('item',this.mobileActionItem.id);
                 const quantity = Math.max(0,Math.min(999,item.quantity+delta));
                 await this.crudMutate('item','update',item.id,{quantity});
                 this.mobileActionItem.quantity = quantity;
             },
             async toggleUncertainFetch(id) {
+                await this.initCRUD();
                 const item = this.crudFind('item',id);
                 await this.crudMutate('item','update',item.id,{uncertain:!item.uncertain});
             },
@@ -407,6 +441,7 @@
                 this.mobileActionItem = null;
             },
             async crudMoveItem(id,sectionId,position) {
+                await this.initCRUD();
                 const rows = this.crudState().items.filter(item => item.section_id === Number(sectionId) && item.id !== Number(id)).sort(byOrder);
                 const sort_order = position ?? Math.max(-1,...rows.map(item => item.sort_order))+1;
                 const operations = position === undefined ? [] : rows.filter(item => item.sort_order >= sort_order).map(row => ({entity:'item',action:'update',entity_id:row.id,values:{sort_order:row.sort_order+1}}));
@@ -424,11 +459,13 @@
                 await this.crudMutate('section','update',Number(id),{sort_mode:modes[(modes.indexOf(mode)+1)%3]});
             },
             async toggleAllItems(id) {
+                await this.initCRUD();
                 const items = this.crudState().items.filter(item=>item.section_id===Number(id));
                 const completed = items.some(item=>!item.completed);
                 await this.crudBatch(items.filter(item => item.completed!==completed).map(item => ({entity:'item',action:'update',entity_id:item.id,values:{completed}})));
             },
             async toggleShowCompleted(id) {
+                await this.initCRUD();
                 const list = this.crudFind('list',id);
                 await this.crudMutate('list','update',list.id,{show_completed:!list.show_completed});
             },
@@ -460,16 +497,17 @@
                     window.removeEventListener('online',this._crudOnline); window.removeEventListener('offline',this._crudOffline);
                     document.removeEventListener('visibilitychange',this._crudVisibility);
                 },
-                renderCRUD() {
-                    if (!this._crudReady) return;
-                    const state=this.crudState();
+                renderCRUD(state) {
+                    if (!state && !this._crudReady) return;
+                    state ||= this.crudState();
                     this.crudHasLists = state.lists.length > 0;
                     const container=document.getElementById('lists-container');
                     if (!container) return;
                     if (!this._crudLocalMutation && container.contains(document.activeElement) && document.activeElement.matches('input,textarea')) {
                         document.activeElement.addEventListener('blur', () => this.renderCRUD(), {once:true}); return;
                     }
-                    const signature=JSON.stringify(state);
+                    this._crudShown = true;
+                    const signature=JSON.stringify({lists:state.lists,sections:state.sections,items:state.items});
                     if (container.dataset.crudSignature===signature) return;
                     container.innerHTML=window.OfflineView.lists(state.lists,state.items,state.sections);
                     container.dataset.crudSignature=signature;

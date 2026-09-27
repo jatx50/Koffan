@@ -190,6 +190,18 @@ func main() {
 		MaxAge: 86400 * 30, // 30 days - files are embedded and versioned at build time
 	}))
 
+	// Browsers request /favicon.ico regardless of the <link rel="icon"> tags.
+	// Serve it before the auth middleware so it never 404s or redirects.
+	favicon, err := fs.ReadFile(staticRootFS, "favicon.ico")
+	if err != nil {
+		log.Fatalf("Embedded favicon missing: %v", err)
+	}
+	app.Get("/favicon.ico", func(c *fiber.Ctx) error {
+		c.Set(fiber.HeaderCacheControl, "public, max-age=2592000")
+		c.Type("ico")
+		return c.Send(favicon)
+	})
+
 	// Auth routes (before middleware)
 	app.Get("/login", handlers.LoginPage)
 	app.Post("/login", handlers.LoginRateLimitMiddleware, handlers.Login)

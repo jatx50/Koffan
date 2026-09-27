@@ -4,6 +4,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"strings"
 	"sync"
 )
@@ -25,10 +26,11 @@ type Locale struct {
 }
 
 var (
-	locales           = make(map[string]*Locale)
-	localesMu         sync.RWMutex
-	defaultLang       = "en"
-	cachedAllLocales  map[string]map[string]interface{}
+	locales          = make(map[string]*Locale)
+	localesMu        sync.RWMutex
+	defaultLang      = "en"
+	cachedAllLocales map[string]map[string]interface{}
+	pageJSONCache    sync.Map // language code -> template.JS
 )
 
 // rebuildCachedAllLocales rebuilds the cached map returned by GetAllLocales.
@@ -175,6 +177,45 @@ func GetAllLocales() map[string]map[string]interface{} {
 	localesMu.RLock()
 	defer localesMu.RUnlock()
 	return cachedAllLocales
+}
+
+// ResolveLang returns lang when it is a known locale, otherwise the default.
+func ResolveLang(lang string) string {
+	localesMu.RLock()
+	defer localesMu.RUnlock()
+	if _, ok := locales[lang]; ok {
+		return lang
+	}
+	return defaultLang
+}
+
+// PageTranslationsJSON returns the translations a rendered page embeds: the
+// requested language plus English, which the client uses for missing keys.
+// Pages used to embed every locale (~170 KB); the encoding is cached because
+// the locale files are immutable after Init.
+func PageTranslationsJSON(lang string) template.JS {
+	lang = ResolveLang(lang)
+	if cached, ok := pageJSONCache.Load(lang); ok {
+		return cached.(template.JS)
+	}
+
+	localesMu.RLock()
+	subset := make(map[string]map[string]interface{}, 2)
+	for _, code := range []string{lang, "en"} {
+		if locale, ok := locales[code]; ok {
+			subset[code] = locale.Raw
+		}
+	}
+	localesMu.RUnlock()
+
+	// encoding/json escapes <, > and & so the output is safe inside <script>.
+	data, err := json.Marshal(subset)
+	if err != nil {
+		return template.JS("{}")
+	}
+	encoded := template.JS(data)
+	pageJSONCache.Store(lang, encoded)
+	return encoded
 }
 
 // AvailableLocales returns a list of available languages

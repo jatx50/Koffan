@@ -2,6 +2,19 @@
 # are reviewable instead of depending on floating major-version tags.
 ARG GO_VERSION=1.26.6
 ARG ALPINE_VERSION=3.23
+ARG NODE_VERSION=22
+
+# CSS stage: rebuild static/app.css so it always matches the templates.
+FROM node:${NODE_VERSION}-alpine AS css
+
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY tailwind.config.js ./
+COPY tailwind ./tailwind
+COPY templates ./templates
+COPY static ./static
+RUN npm run build:css
 
 # Build stage
 FROM golang:${GO_VERSION}-alpine${ALPINE_VERSION} AS builder
@@ -17,6 +30,7 @@ RUN go mod download
 
 # Copy source code
 COPY . .
+COPY --from=css /app/static/app.css ./static/app.css
 
 # Read version and build with ldflags
 RUN VERSION=$(cat VERSION | tr -d '\n') && \
