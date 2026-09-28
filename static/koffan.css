@@ -197,3 +197,16 @@ ul {
   border: 1px solid var(--text);
   border-radius: 50%;
 }
+
+/* Bought: the bullet is filled, at the same size; the name is faint and struck through.
+   The quantity does not change. */
+.bought .bullet {
+  background: var(--faint);
+  border-color: var(--faint);
+}
+
+.bought .name {
+  color: var(--faint);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
