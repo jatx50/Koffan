@@ -158,3 +158,23 @@ main {
 .row {
   padding: 0.5rem 0;
 }
+
+/* Lists, as on practicaltypography.com/resumes.html: item text 2.5rem in from the body text;
+   the bullet starts at the body text edge. Hollow circle as tall as the capitals (0.706em),
+   on the baseline (bulleted-and-numbered-lists.html: hollow, noticeable but no bigger). */
+ul {
+  list-style: none;
+  padding-left: 2.5rem;
+}
+
+.bullet {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 0.706em;
+  height: 0.706em;
+  margin-left: -2.5rem;
+  margin-right: calc(2.5rem - 0.706em);
+  vertical-align: baseline;
+  border: 1px solid var(--text);
+  border-radius: 50%;
+}
