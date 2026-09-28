@@ -143,6 +143,15 @@ h2 {
   margin: 1.4rem 0 0.4rem;
 }
 
+/* Count after a section head, an em space after the name: regular, secondary size and colour,
+   as the quantity. Oldstyle figures, as in text (set on html). */
+.count {
+  font-size: 0.84em;
+  font-weight: normal;
+  font-variant-caps: normal;
+  color: var(--secondary);
+}
+
 /* Space: paragraphs 100% of the body size (space-between-paragraphs.html; as on the resumes page). */
 p,
 ul {
