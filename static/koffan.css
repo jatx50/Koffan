@@ -170,6 +170,14 @@ main {
   color: var(--secondary);
 }
 
+/* Note under an item name: italic, as the subtitle under the title; secondary size and colour, as the quantity. */
+.note {
+  display: block;
+  font-size: 0.84em;
+  font-style: italic;
+  color: var(--secondary);
+}
+
 /* Lists, as on practicaltypography.com/resumes.html: item text 2.5rem in from the body text;
    the bullet starts at the body text edge. Hollow circle as tall as the capitals (0.706em),
    on the baseline (bulleted-and-numbered-lists.html: hollow, noticeable but no bigger). */
