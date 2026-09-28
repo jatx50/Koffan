@@ -154,9 +154,20 @@ main {
   padding: 1.5rem;
 }
 
-/* List rows: 1rem between rows, same as paragraph space. */
+/* List rows: 1rem between rows, same as paragraph space. Bullet, name and quantity on one baseline. */
 .row {
+  display: flex;
+  align-items: baseline;
   padding: 0.5rem 0;
+}
+
+/* Quantity: right-aligned at the text edge, lining tabular figures (.tab; grids-of-numbers.html).
+   Secondary size and colour, as the grey asides on practicaltypography.com (0.83rem). */
+.qty {
+  margin-left: auto;
+  padding-left: 1em;
+  font-size: 0.84em;
+  color: var(--secondary);
 }
 
 /* Lists, as on practicaltypography.com/resumes.html: item text 2.5rem in from the body text;
