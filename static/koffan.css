@@ -129,8 +129,10 @@ body {
 
 /* Header above the title, at the page margin: not indented, as the bottom field.
    Small caps in the secondary colour, as the small-caps links on practicaltypography.com; no accent,
-   so that the header does not draw the eye away from the list. A 3px rule above, as the title block on
-   practicaltypography.com/resumes.html (5px to the text); 1rem to the title (paragraph space). */
+   so that the header does not draw the eye away from the list. The secondary size, as the page links
+   on practicaltypography.com (16.2px, 0.9 of its 18px root, against 17.64px body text).
+   A 3px rule above, as the title block on practicaltypography.com/resumes.html (5px to the text);
+   1rem to the title (paragraph space). */
 header {
   display: flex;
   justify-content: space-between;
@@ -139,6 +141,7 @@ header {
   border-top: 3px solid var(--text);
   padding-top: 0.3rem;
   font-variant-caps: all-small-caps;
+  font-size: var(--small);
   color: var(--secondary);
 }
 
@@ -164,11 +167,12 @@ header button {
 
 /* Headings, as on practicaltypography.com/resumes.html:
    title Equity bold 125%; subtitle Equity italic; section head Equity bold small caps.
-   Space from that page's CSS, in rem (1rem = body size). */
+   Space from that page's CSS, in rem (1rem = body size).
+   The title is flush left at the page margin, as the header (not indented); the section heads are indented. */
 h1 {
   font-size: 1.25rem;
   line-height: 1.1;
-  margin: 0 0 0.8rem;
+  margin: 0 0 0.8rem -2rem;
 }
 
 .subtitle {
