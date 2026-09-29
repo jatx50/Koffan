@@ -90,6 +90,12 @@
   --accent: #E0806C;
 }
 
+/* Sizes: the body size (1rem) and one secondary size for all secondary text:
+   quantities, notes, counts and marks. */
+:root {
+  --small: 0.9rem;
+}
+
 /* Base. Body 17.64px, line height 1.4: Equity on practicaltypography.com at 390px
    (point-size.html 15–25px; line-spacing.html 120–145%). */
 html {
@@ -121,26 +127,35 @@ body {
   font-variant-caps: all-small-caps;
 }
 
-/* Header above the title: "‹ Lists" at the text edge, as the title (only list items are indented,
-   as on practicaltypography.com); the buttons at the right. Secondary size; 1rem to the title (paragraph space). */
+/* Header above the title, at the page margin: not indented, as the bottom field.
+   Small caps in the secondary colour, as the small-caps links on practicaltypography.com; no accent,
+   so that the header does not draw the eye away from the list. A 3px rule above, as the title block on
+   practicaltypography.com/resumes.html (5px to the text); 1rem to the title (paragraph space). */
 header {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-size: 0.84rem;
-  margin-bottom: 1rem;
+  margin: 0 0 1rem -2rem;
+  border-top: 3px solid var(--text);
+  padding-top: 0.3rem;
+  font-variant-caps: all-small-caps;
+  color: var(--secondary);
 }
 
-/* "Lists" is a link, so it is in the accent colour (color.html: colour denotes clickability). */
 header a {
-  color: var(--accent);
+  color: inherit;
   text-decoration: none;
 }
 
-/* Header buttons: the text only, secondary colour, 1em apart. */
+/* Arrow before a link: Concourse, then a no-break space, as "← letterhead" on practicaltypography.com. */
+.arrow {
+  font-family: concourse_ot, sans-serif;
+}
+
+/* Header buttons: the text only, 1em apart. */
 header button {
   font: inherit;
-  color: var(--secondary);
+  color: inherit;
   background: none;
   border: 0;
   padding: 0;
@@ -162,17 +177,23 @@ h1 {
   margin-bottom: 2rem;
 }
 
+/* Section head: small caps at the body size, but regular and in the secondary colour, as the mockup,
+   so that it is less prominent than the items (headings.html: non-bold headings work too;
+   the space above and below gives the emphasis). */
 h2 {
   font-size: 1rem;
   line-height: 1.3;
+  font-weight: normal;
   font-variant-caps: all-small-caps;
+  color: var(--secondary);
   margin: 1.4rem 0 0.4rem;
 }
 
-/* Count after a section head, an em space after the name: regular, secondary size and colour,
-   as the quantity. Oldstyle figures, as in text (set on html). */
+/* Count after the title or a section head, an em space after the name: regular, secondary size
+   and colour, as the quantity; on one line. Oldstyle figures, as in text (set on html). */
 .count {
-  font-size: 0.84em;
+  font-size: var(--small);
+  white-space: nowrap;
   font-weight: normal;
   font-variant-caps: normal;
   color: var(--secondary);
@@ -184,9 +205,10 @@ ul {
   margin: 0 0 1em;
 }
 
-/* Page: text 1.5rem from each edge, as on practicaltypography.com at 390px (page-margins.html). */
+/* Page: 1.5rem margins, as on practicaltypography.com at 390px (page-margins.html).
+   The text edge is 2rem further in at the left, so that the list bullets hang in the margin (mockup). */
 main {
-  padding: 1.5rem;
+  padding: 1.5rem 1.5rem 1.5rem 3.5rem;
 }
 
 /* Bottom field: fixed at the bottom on the page colour, from text edge to text edge.
@@ -229,19 +251,25 @@ main:has(+ footer) {
   padding: 0.5rem 0;
 }
 
+/* First row: no top padding, so the space under the section head is only its bottom margin,
+   as between a subhead and its list on practicaltypography.com/resumes.html. */
+.row:first-child {
+  padding-top: 0;
+}
+
 /* Quantity: right-aligned at the text edge, lining tabular figures (.tab; grids-of-numbers.html).
    Secondary size and colour, as the grey asides on practicaltypography.com (0.83rem). */
 .qty {
   margin-left: auto;
   padding-left: 1em;
-  font-size: 0.84em;
+  font-size: var(--small);
   color: var(--secondary);
 }
 
 /* Note under an item name: italic, as the subtitle under the title; secondary size and colour, as the quantity. */
 .note {
   display: block;
-  font-size: 0.84em;
+  font-size: var(--small);
   font-style: italic;
   color: var(--secondary);
 }
@@ -252,35 +280,46 @@ main:has(+ footer) {
 .uncertain {
   font-family: concourse_ot, sans-serif;
   font-weight: 600;
-  font-size: 0.84em;
+  font-size: var(--small);
   color: var(--secondary);
 }
 
-/* Lists, as on practicaltypography.com/resumes.html: item text 2.5rem in from the body text;
-   the bullet starts at the body text edge. Hollow circle as tall as the capitals (0.706em),
-   on the baseline (bulleted-and-numbered-lists.html: hollow, noticeable but no bigger). */
+/* Lists: the item text at the text edge; the bullet hangs in the left margin (mockup), about 1.4rem
+   from the item text, as from the index to the text on practicaltypography.com/resumes.html.
+   The bullet is a Concourse glyph, as the site's indexes and bullets: open "◦" at the mockup's size
+   (11px of 19px: 0.58rem of ink), on the baseline side of the x-height (centre 0.29rem up).
+   The margins and the offset place the ink, not the glyph box (bulleted-and-numbered-lists.html: hollow). */
 ul {
   list-style: none;
-  padding-left: 2.5rem;
+  padding-left: 0;
 }
 
 .bullet {
-  display: inline-block;
-  box-sizing: border-box;
-  width: 0.706em;
-  height: 0.706em;
-  margin-left: -2.5rem;
-  margin-right: calc(2.5rem - 0.706em);
-  vertical-align: baseline;
-  border: 1px solid var(--text);
-  border-radius: 50%;
+  position: relative;
+  top: 0.201rem;
+  margin-left: -2.156rem;
+  margin-right: 1.264rem;
+  font-family: concourse_ot, sans-serif;
+  font-size: 1.859rem;
+  line-height: 0;
 }
 
-/* Bought: the bullet is filled, at the same size; the name is faint and struck through.
-   The quantity does not change. */
+.bullet::before {
+  content: "\25E6";
+}
+
+/* Bought: the bullet is a filled "•", smaller (the mockup's 9px of 19px: 0.47rem of ink), in faint,
+   on the same centre; the name is faint and struck through. The quantity does not change. */
 .bought .bullet {
-  background: var(--faint);
-  border-color: var(--faint);
+  top: 0.166rem;
+  margin-left: -2.125rem;
+  margin-right: 1.295rem;
+  font-size: 1.728rem;
+  color: var(--faint);
+}
+
+.bought .bullet::before {
+  content: "\2022";
 }
 
 .bought .name {

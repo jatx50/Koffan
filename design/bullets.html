@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bullets – Koffan design</title>
+<link rel="icon" href="../static/favicon.ico">
+<link rel="stylesheet" href="../static/koffan.css">
+<script src="night.js"></script>
+<style>
+/* Comparison only (step 2, increment 10): the bullet as a glyph, at the same size, centre and indent
+   as the CSS circle in koffan.css. Open: "◦" with a 0.58rem ink diameter; bought: "•" with 0.47rem. */
+.glyph .bullet {
+  width: auto;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  line-height: 0;
+  position: relative;
+}
+.glyph .bullet::before {
+  content: "◦";
+}
+.glyph .bought .bullet {
+  background: none;
+  color: var(--faint);
+}
+.glyph .bought .bullet::before {
+  content: "•";
+}
+.equity .bullet {
+  font-size: 1.859rem;
+  top: 0.201rem;
+  margin-left: -2.242rem;
+  margin-right: 1.178rem;
+}
+.equity .bought .bullet {
+  font-size: 1.728rem;
+  top: 0.166rem;
+  margin-left: -2.204rem;
+  margin-right: 1.216rem;
+}
+.concourse .bullet {
+  font-family: concourse_ot, sans-serif;
+  font-size: 1.859rem;
+  top: 0.201rem;
+  margin-left: -2.156rem;
+  margin-right: 1.264rem;
+}
+.concourse .bought .bullet {
+  font-size: 1.728rem;
+  top: 0.166rem;
+  margin-left: -2.125rem;
+  margin-right: 1.295rem;
+}
+</style>
+</head>
+<body>
+<main>
+<h1>Bullets</h1>
+<p class="subtitle">The same rows with three kinds of bullet</p>
+
+<h2>A. CSS circle</h2>
+<ul>
+<li class="row"><span class="bullet"></span><span class="name">Tomatoes</span><span class="qty tab">×&#8201;6</span></li>
+<li class="row"><span class="bullet"></span><span class="name">Avocados<span class="note">Ripe ones, for Saturday</span></span><span class="qty tab">×&#8201;3</span></li>
+<li class="row bought"><span class="bullet"></span><span class="name">Lemons</span><span class="qty tab">×&#8201;4</span></li>
+</ul>
+
+<h2>B. Equity glyph</h2>
+<ul class="glyph equity">
+<li class="row"><span class="bullet"></span><span class="name">Tomatoes</span><span class="qty tab">×&#8201;6</span></li>
+<li class="row"><span class="bullet"></span><span class="name">Avocados<span class="note">Ripe ones, for Saturday</span></span><span class="qty tab">×&#8201;3</span></li>
+<li class="row bought"><span class="bullet"></span><span class="name">Lemons</span><span class="qty tab">×&#8201;4</span></li>
+</ul>
+
+<h2>C. Concourse glyph</h2>
+<ul class="glyph concourse">
+<li class="row"><span class="bullet"></span><span class="name">Tomatoes</span><span class="qty tab">×&#8201;6</span></li>
+<li class="row"><span class="bullet"></span><span class="name">Avocados<span class="note">Ripe ones, for Saturday</span></span><span class="qty tab">×&#8201;3</span></li>
+<li class="row bought"><span class="bullet"></span><span class="name">Lemons</span><span class="qty tab">×&#8201;4</span></li>
+</ul>
+</main>
+</body>
+</html>
