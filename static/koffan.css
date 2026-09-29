@@ -189,6 +189,39 @@ main {
   padding: 1.5rem;
 }
 
+/* Bottom field: fixed at the bottom on the page colour, from text edge to text edge.
+   The field colour, height (a 48px tap target) and radius come from the mockup. */
+footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0.75rem 1.5rem 1.5rem;
+  background: var(--bg);
+}
+
+/* Space under the last row, so that the fixed field does not hide it (the mockup's 120px). */
+main:has(+ footer) {
+  padding-bottom: 7rem;
+}
+
+.field {
+  box-sizing: border-box;
+  width: 100%;
+  height: 48px;
+  padding: 0 0.5em;
+  border: 0;
+  border-radius: 4px;
+  background: var(--field);
+  color: var(--text);
+  font: inherit;
+}
+
+.field::placeholder {
+  color: var(--secondary);
+  opacity: 1;
+}
+
 /* List rows: 1rem between rows, same as paragraph space. Bullet, name and quantity on one baseline. */
 .row {
   display: flex;
