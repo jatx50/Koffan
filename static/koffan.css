@@ -121,6 +121,32 @@ body {
   font-variant-caps: all-small-caps;
 }
 
+/* Header above the title: "‹ Lists" at the text edge, as the title (only list items are indented,
+   as on practicaltypography.com); the buttons at the right. Secondary size; 1rem to the title (paragraph space). */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.84rem;
+  margin-bottom: 1rem;
+}
+
+/* "Lists" is a link, so it is in the accent colour (color.html: colour denotes clickability). */
+header a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+/* Header buttons: the text only, secondary colour, 1em apart. */
+header button {
+  font: inherit;
+  color: var(--secondary);
+  background: none;
+  border: 0;
+  padding: 0;
+  margin-left: 1em;
+}
+
 /* Headings, as on practicaltypography.com/resumes.html:
    title Equity bold 125%; subtitle Equity italic; section head Equity bold small caps.
    Space from that page's CSS, in rem (1rem = body size). */
